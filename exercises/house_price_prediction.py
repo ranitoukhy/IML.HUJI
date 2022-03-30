@@ -1,3 +1,5 @@
+import numpy
+
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
@@ -7,6 +9,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
+from scipy import stats
+
 pio.templates.default = "simple_white"
 
 
@@ -23,10 +27,27 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    full_data = pd.read_csv(filename).drop_duplicates()
+    prices = full_data["price"]
+    bedrooms = full_data["bedrooms"]
+    living_size = full_data["sqft_living"]
+    full_data = full_data[bedrooms > 0]
+    full_data = full_data[prices > 0]
+    full_data = full_data[living_size > 0]
+    fits = list(["bedrooms" ,"bathrooms", "sqft_living", "sqft_lot", "waterfront", "view", "condition", "grade", "sqft_above", "sqft_basement", "yr_built", "yr_renovated", "lat", "long", "sqft_living15", "sqft_lot15"])
+    features = pd.concat([full_data[fits],
+                          pd.get_dummies(full_data["floors"],
+                                         drop_first=True),
+                          pd.get_dummies(full_data["zipcode"],
+                                         drop_first=True),
+                          pd.get_dummies(full_data["date"],
+                                         drop_first=True)], axis=1)
+    lables = full_data["price"]
+    return features, lables
 
 
-def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
+def feature_evaluation(X: pd.DataFrame, y: pd.Series,
+                       output_path: str = ".") -> NoReturn:
     """
     Create scatter plot between each feature and the response.
         - Plot title specifies feature name
@@ -43,19 +64,27 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    raise NotImplementedError()
+    fig2 = px.scatter(x=X.columns, y=stats.pearsonr(X.columns[:], y),
+                      title="samples and their pdf values according to the estimated gaussian",
+                      labels={'x': 'Sample value',
+                              'y': 'Pdf of the sample'})
+    fig2.update_layout(title_x=0.5)
+    fig2.show()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+    features, lables = load_data(
+        "/Users/sigalnaim/Desktop/IML/IML.HUJI/datasets/house_prices.csv")
+    feature_evaluation(features, lables)
+    #raise NotImplementedError()
 
     # Question 2 - Feature evaluation with respect to response
-    raise NotImplementedError()
+    #raise NotImplementedError()
 
     # Question 3 - Split samples into training- and testing sets.
-    raise NotImplementedError()
+    #raise NotImplementedError()
 
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
@@ -64,4 +93,4 @@ if __name__ == '__main__':
     #   3) Test fitted model over test set
     #   4) Store average and variance of loss over test set
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
-    raise NotImplementedError()
+   # raise NotImplementedError()
