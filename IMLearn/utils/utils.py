@@ -33,8 +33,22 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
         Responses of test samples
 
     """
+    # perm = np.random.permutation(len(X))
+    # train_X, train_Y = X.iloc[perm[:int(train_proportion * len(X))]],  y.iloc[perm[:int(train_proportion * len(X))]]
+    # test_X, test_Y = X.iloc[perm[int(train_proportion * len(X)):]],  y.iloc[perm[int(train_proportion * len(X)):]]
+    # return train_X, train_Y, test_X, test_Y
+    num_samples = len(X)
+    random_indices = np.random.permutation(num_samples)
+    train_size = np.ceil(train_proportion * num_samples).astype(int)
+    test_size = num_samples - train_size
 
-    raise NotImplementedError()
+    test_indices = random_indices[:test_size]
+    train_indices = random_indices[test_size:]
+
+    return X.iloc[train_indices], y.iloc[train_indices], X.iloc[test_indices], y.iloc[
+        test_indices]
+
+
 
 
 

@@ -53,11 +53,13 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        U, S, VT = numpy.linalg.svd(X)
-        np.where(S == 0, 0, (1/S))
-        self.coefs_ = (U.T @ S @ VT.T) @ y
         if self.include_intercept_:
-            self.coefs_ = np.append(np.array([1]),self.coefs_)
+            X = np.hstack([np.ones((len(X), 1)), X])
+        # U, S, VT = numpy.linalg.svd(X)
+        # S = np.where(S == 0, 0, (1/S))
+        # self.coefs_ = (VT.T @ S @ U.T) @ y
+        self.coefs_ = numpy.linalg.pinv(X) @ y.T
+
 
 
 
@@ -75,6 +77,8 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
+        if self.include_intercept_:
+            X = np.hstack([np.ones((len(X), 1)), X])
         return X @ self.coefs_
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
